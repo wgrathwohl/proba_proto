@@ -8,9 +8,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 class OmniglotModel(nn.Module):
-    def __init__(self, num_filters=64, embed_dim=64, cuda=False):
+    def __init__(self, num_filters=64, embed_dim=64, use_cuda=False):
         super(OmniglotModel, self).__init__()
-        self.cuda = cuda
+        self.use_cuda = use_cuda
         self.num_filters = num_filters
         # encoder params
         self.c1 = nn.Conv2d(1, num_filters, 3, padding=1, bias=False)
@@ -72,7 +72,7 @@ class OmniglotModel(nn.Module):
 
     def reparametrize(self, mu, log_var):
         std = (log_var / 2.0).exp_()
-        if self.cuda:
+        if self.use_cuda:
             eps = torch.cuda.FloatTensor(std.size()).normal_()
         else:
             eps = torch.FloatTensor(std.size()).normal_()

@@ -56,7 +56,7 @@ if args.dataset == "omniglot":
 else:
     assert False
 
-model = OmniglotModel(cuda=args.cuda)
+model = OmniglotModel(use_cuda=args.cuda)
 # create Variable for log_class_var
 # initial estimate for class std dev is .1
 init_log_class_var = np.array([np.log(.1**2)], dtype=np.float32)
