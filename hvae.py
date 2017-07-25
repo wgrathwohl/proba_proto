@@ -62,7 +62,7 @@ model = OmniglotModel(use_cuda=args.cuda)
 init_log_class_var = np.array([np.log(.1**2)], dtype=np.float32)
 log_class_var = Variable(torch.from_numpy(init_log_class_var), requires_grad=args.learn_class_var)
 if args.cuda:
-    log_class_var.cuda()
+    log_class_var = log_class_var.cuda()
     model.cuda()
 
 reconstruction_function = nn.BCELoss()
