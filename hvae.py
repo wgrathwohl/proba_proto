@@ -46,6 +46,7 @@ args.cuda = torch.cuda.is_available()
 
 torch.manual_seed(args.seed)
 if args.cuda:
+    print("Using CUDA")
     torch.cuda.manual_seed(args.seed)
 
 
@@ -223,10 +224,9 @@ def test(epoch):
             else:
                 accuracies.append(0.0)
 
-    print(len(accuracies))
     test_accuracy = np.mean(np.array(accuracies))
 
-    log_value("test_accuracy", test_accuracy, epoch-1)
+    log_value("test_accuracy", test_accuracy, epoch * args.test_interval)
     print('====> Test set accuracy: {:.4f}'.format(test_accuracy))
 
 if __name__ == "__main__":
