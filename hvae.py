@@ -96,7 +96,11 @@ def loss_function(recon_x, x, mu, log_var, log_class_var):
     BCE = reconstruction_function(recon_x, x) / (w * n)
     # E_q[log(p(z))] = logC - E_q[hat(z**2)]/(2 * class_var / n) + ...
     # ... + E_q[hat(z)**2]/(2 * class_var / n) - E_q[hat(z)**2]/(2 * (1 + class_var / n))
-    p1 = Variable(torch.from_numpy(np.array([-((.5 * (n-1)) * np.log(2.0 * np.pi))], dtype=np.float32)))
+    p1_array = np.array([-((.5 * (n - 1)) * np.log(2.0 * np.pi))], dtype=np.float32)
+    if args.cuda:
+        p1 = Variable(torch.FloatTensor(p1_array).cuda())
+    else:
+        p1 = Variable(torch.FloatTensor(p1_array))
     p2 = log_class_var.sub(np.log(n)).mul(.5)
     p3 = log_class_var.mul(-.5 * n)
     p4 = torch.log1p(log_class_var.exp().div(n)).add(np.log(2.0 * np.pi)).mul(-.5)
