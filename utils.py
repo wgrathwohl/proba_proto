@@ -12,7 +12,7 @@ def display_batch(batch, display=True):
     cls_ims = []
     for cls in batch:
         im = torchvision.utils.make_grid(cls)
-        im = im.numpy()
+        im = im.cpu().numpy()
         im = to_open_cv(im)
         cls_ims.append(im)
     im = np.vstack(cls_ims)
