@@ -14,6 +14,7 @@ from networks import OmniglotModel
 import utils
 import data.omniglot as omniglot
 from tensorboard_logger import configure, log_value
+import time
 
 parser = argparse.ArgumentParser(description='test vae')
 parser.add_argument('--train-shot', type=int, default=5, metavar='TRS',
@@ -148,6 +149,7 @@ def train(epoch, opt):
     model.train()
     train_loss = 0
     for batch_idx in xrange(args.test_interval):
+        start_time = time.time()
         data, _ = train_dataset.get_batch_points()
         data = Variable(data)
         # data should be (way, shot, c, h, w)
@@ -168,23 +170,23 @@ def train(epoch, opt):
         loss.backward()
         train_loss += loss.data[0]
         opt.step()
+        batch_time = time.time() - start_time
         if batch_idx % args.log_interval == 0:
             step = (args.test_interval * (epoch - 1)) + batch_idx
             log_value("total_train_loss", loss.data[0], step)
             log_value("train_bce", bce.data[0], step)
             log_value("train_kld", kld.data[0], step)
             log_value("log_class_var", log_class_var.data[0], step)
-            print("Logging to step {}".format(step))
             c, h, w = recon_batch.size()[1:]
             if args.save_images:
                 utils.save_recons_few_shot(
                     data.data, recon_batch.view(args.train_way, args.train_shot, c, h, w).data,
                     os.path.join(args.train_dir, "epoch_{}_iter_{}".format(epoch, batch_idx))
                 )
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tBCE: {:.6f}, KLD: {:6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}, BCE: {:.6f}, KLD: {:6f}, Time: {:6f}'.format(
                 epoch, batch_idx * len(data), len(train_dataset),
                 100. * batch_idx / args.test_interval,
-                loss.data[0], bce.data[0], kld.data[0]))
+                loss.data[0], bce.data[0], kld.data[0], batch_time))
 
     print('====> Epoch: {} Average loss: {:.4f}'.format(
           epoch, train_loss / args.test_interval))
@@ -234,7 +236,7 @@ def test(epoch):
         for j in range(mu_te.size(0)):
             mu_j_te, logvar_j_te = mu_te[j, :], logvar_te[j, :]
             test_j = log_expected_prob(mu_tr, logvar_tr, mu_j_te.view(1, 1, -1), logvar_j_te.view(1, 1, -1))
-            pred_ind = np.argmax(test_j.data.numpy())
+            pred_ind = np.argmax(test_j.data.cpu().numpy())
             if pred_ind == j:
                 accuracies.append(1.0)
             else:
