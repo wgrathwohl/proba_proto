@@ -39,7 +39,7 @@ parser.add_argument('--test-interval', type=int, default=2000, metavar='TEI',
 parser.add_argument('--test-episodes', type=int, default=1000, metavar='TEE',
                     help='how many episodes to average over when reporting testing accuracy')
 parser.add_argument('--learn-class-var', type=bool, default=True, metavar='LCV',
-                    help='number of samples per class per training batch (default: 5)')
+                    help='whether or not to train the class variance')
 
 args = parser.parse_args()
 args.cuda = torch.cuda.is_available()
@@ -60,10 +60,19 @@ model = OmniglotModel(use_cuda=args.cuda)
 # create Variable for log_class_var
 # initial estimate for class std dev is .1
 init_log_class_var = np.array([np.log(.1**2)], dtype=np.float32)
-log_class_var = Variable(torch.from_numpy(init_log_class_var), requires_grad=args.learn_class_var)
+
 if args.cuda:
-    log_class_var = log_class_var.cuda()
+    log_class_var = Variable(
+        torch.FloatTensor(init_log_class_var).cuda(),
+        requires_grad=args.learn_class_var
+    )
     model.cuda()
+else:
+    log_class_var = Variable(
+        torch.FloatTensor(init_log_class_var),
+        requires_grad=args.learn_class_var
+    )
+
 
 reconstruction_function = nn.BCELoss()
 reconstruction_function.size_average = False
