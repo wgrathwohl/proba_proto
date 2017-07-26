@@ -104,7 +104,6 @@ def loss_function(recon_x, x, mu, log_var, log_class_var):
     p2 = log_class_var.sub(np.log(n)).mul(.5)
     p3 = log_class_var.mul(-.5 * n)
     p4 = torch.log1p(log_class_var.exp().div(n)).add(np.log(2.0 * np.pi)).mul(-.5)
-    print(type(p1.data), type(p2.data), type(p3.data), type(p4.data))
     logC = p1.add(p2).add(p3).add(p4)
 
     mu_sqr_plus_var = mu.mul(mu).sum(dim=1).add(log_var.exp().sum(dim=1))[:, 0, :]
