@@ -40,6 +40,8 @@ parser.add_argument('--test-episodes', type=int, default=1000, metavar='TEE',
                     help='how many episodes to average over when reporting testing accuracy')
 parser.add_argument('--learn-class-var', type=bool, default=True, metavar='LCV',
                     help='whether or not to train the class variance')
+parser.add_argument('--save-images', type=bool, default=True, metavar='SI',
+                    help='whether or not to train the class variance')
 
 args = parser.parse_args()
 args.cuda = torch.cuda.is_available()
@@ -174,10 +176,11 @@ def train(epoch, opt):
             log_value("log_class_var", log_class_var.data[0], step)
             print("Logging to step {}".format(step))
             c, h, w = recon_batch.size()[1:]
-            utils.save_recons_few_shot(
-                data.data, recon_batch.view(args.train_way, args.train_shot, c, h, w).data,
-                os.path.join(args.train_dir, "epoch_{}_iter_{}".format(epoch, batch_idx))
-            )
+            if args.save_images:
+                utils.save_recons_few_shot(
+                    data.data, recon_batch.view(args.train_way, args.train_shot, c, h, w).data,
+                    os.path.join(args.train_dir, "epoch_{}_iter_{}".format(epoch, batch_idx))
+                )
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tBCE: {:.6f}, KLD: {:6f}'.format(
                 epoch, batch_idx * len(data), len(train_dataset),
                 100. * batch_idx / args.test_interval,
